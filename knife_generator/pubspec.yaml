@@ -1,0 +1,25 @@
+name: knife_generator
+description: Code generator for the Knife compile-time dependency injection library.
+version: 1.0.0
+repository: https://github.com/roman-zm/knife
+topics:
+  - dependency-injection
+  - codegen
+  - build-runner
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  build: ^4.0.5
+  source_gen: ^4.2.0
+  code_builder: ^4.9.0
+  analyzer: ^8.1.1
+  dart_style: ^3.1.2
+  collection: ^1.19.1
+
+  knife_annotations: ^1.0.0
+
+dev_dependencies:
+  test: ^1.24.0
+  build_test: ^3.5.12

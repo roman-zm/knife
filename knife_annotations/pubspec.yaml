@@ -1,0 +1,11 @@
+name: knife_annotations
+description: Annotations for the Knife compile-time dependency injection library.
+version: 1.0.0
+repository: https://github.com/roman-zm/knife
+topics:
+  - dependency-injection
+  - codegen
+  - annotations
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"

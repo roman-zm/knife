@@ -1,0 +1,7 @@
+{
+  "dart.flutterSdkPath": "~/fvm/versions/3.32.0",
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.dart": "${capture}.component.dart, ${capture}.module.dart"
+  }
+}

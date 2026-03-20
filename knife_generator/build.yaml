@@ -1,0 +1,13 @@
+builders:
+  module_generator:
+    import: "package:knife_generator/module_generator.dart"
+    builder_factories: ["moduleBuilder"]
+    build_extensions: { ".dart": [".module.dart"] }
+    auto_apply: dependents
+    build_to: source
+  dependency_injector:
+    import: "package:knife_generator/component_generator.dart"
+    builder_factories: ["dependencyInjectorBuilder"]
+    build_extensions: { ".dart": [".component.dart"] }
+    auto_apply: dependents
+    build_to: source
