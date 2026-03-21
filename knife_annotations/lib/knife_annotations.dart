@@ -1,35 +1,56 @@
-/// Аннотация для конструктора, указывающая, что система DI
-/// должна использовать его для создания экземпляра.
+/// {@template inject_annotation}
+/// Annotation for a constructor that tells the DI system
+/// to use this constructor to create an instance.
+/// {@endtemplate}
 class Inject {
+  /// {@macro inject_annotation}
   const Inject();
 }
 
+/// {@macro inject_annotation}
 const inject = Inject();
 
-/// Аннотация для класса, который содержит методы, предоставляющие зависимости.
-
+/// {@template module_annotation}
+/// Annotation for a class that contains dependency provider methods.
+/// {@endtemplate}
 class Module {
+  /// {@macro module_annotation}
   const Module();
 }
 
+/// {@macro module_annotation}
 const module = Module();
 
-/// Аннотация для метода в @Module, который предоставляет зависимость.
+/// {@template provides_annotation}
+/// Annotation for a method in a [Module] that provides a dependency.
+/// {@endtemplate}
 class Provides {
+  /// {@macro provides_annotation}
   const Provides();
 }
 
+/// {@macro provides_annotation}
 const provides = Provides();
 
-/// Аннотация для компонента, который связывает модули и зависимости.
+/// {@template component_annotation}
+/// Annotation for a component that wires modules and dependencies together.
+/// {@endtemplate}
 class Component {
+  /// List of module types used by this component.
   final List<Type> modules;
+
+  /// {@macro component_annotation}
   const Component({this.modules = const []});
 }
 
-/// Аннотация для класса, который связывает интерфейс с реализацией.
+/// {@template binds_annotation}
+/// Annotation for a class or method that binds
+/// an interface to its implementation.
+/// {@endtemplate}
 class Binds {
+  /// {@macro binds_annotation}
   const Binds();
 }
 
+/// {@macro binds_annotation}
 const binds = Binds();
