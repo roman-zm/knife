@@ -1,0 +1,7 @@
+analyzer:
+  errors:
+    public_member_api_docs: warning
+
+linter:
+  rules:
+    - public_member_api_docs
