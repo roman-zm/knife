@@ -1,10 +1,12 @@
 # knife_annotations
 
-Аннотации для Knife, библиотеки compile-time dependency injection на Dart.
+[Russian version](./README.ru.md)
 
-Пакет содержит только декларации аннотаций и подключается в `dependencies`. Для генерации кода нужен отдельный пакет [`knife_generator`](https://pub.dev/packages/knife_generator), который подключается в `dev_dependencies`.
+Annotations for Knife, a compile-time dependency injection library for Dart.
 
-## Установка
+This package only contains annotation declarations and is added to `dependencies`. Code generation requires the separate package [`knife_generator`](https://pub.dev/packages/knife_generator), which should be added to `dev_dependencies`.
+
+## Installation
 
 ```yaml
 dependencies:
@@ -15,17 +17,17 @@ dev_dependencies:
   build_runner: ^2.4.9
 ```
 
-Импорт:
+Import:
 
 ```dart
 import 'package:knife_annotations/knife_annotations.dart';
 ```
 
-## Аннотации
+## Annotations
 
 ### `@Component`
 
-Помечает корневой компонент, который объединяет модули и объявляет точки входа в граф зависимостей.
+Marks the root component that combines modules and declares entry points into the dependency graph.
 
 ```dart
 import 'package:knife_annotations/knife_annotations.dart';
@@ -42,21 +44,21 @@ abstract class AppComponent {
 }
 ```
 
-Требования:
+Requirements:
 
-- класс должен быть абстрактным
-- должен быть factory-конструктор вида `factory AppComponent() = KnifeAppComponent;`
-- должен быть импорт сгенерированного файла вида `import 'app_component.component.dart';`
+- the class must be abstract
+- it must have a factory constructor in the form `factory AppComponent() = KnifeAppComponent;`
+- it must import the generated file, for example `import 'app_component.component.dart';`
 
 ### `@module`
 
-Помечает модуль, который описывает способы получения зависимостей.
+Marks a module that describes how dependencies are obtained.
 
-У модуля есть три допустимых формы.
+A module has three valid forms.
 
-#### Вариант 1. Неабстрактный модуль только с `@provides`
+#### Option 1. Non-abstract module with only `@provides`
 
-Используется, когда все зависимости модуль создаёт вручную, а `@binds`-методов в нём нет.
+Used when the module creates all dependencies manually and does not contain any `@binds` methods.
 
 ```dart
 import 'package:knife_annotations/knife_annotations.dart';
@@ -68,9 +70,9 @@ class NetworkModule {
 }
 ```
 
-#### Вариант 2. Полностью абстрактный модуль только с `@binds`
+#### Option 2. Fully abstract module with only `@binds`
 
-Используется, когда модуль только связывает абстракции с реализациями.
+Used when the module only binds abstractions to implementations.
 
 ```dart
 import 'package:knife_annotations/knife_annotations.dart';
@@ -86,9 +88,9 @@ abstract interface class ServiceModule {
 }
 ```
 
-#### Вариант 3. Абстрактный модуль со смешанными `@provides` и `@binds`
+#### Option 3. Abstract module with mixed `@provides` and `@binds`
 
-Используется, когда часть зависимостей создаётся вручную, а часть описывается как биндинги.
+Used when some dependencies are created manually and others are declared as bindings.
 
 ```dart
 import 'package:knife_annotations/knife_annotations.dart';
@@ -111,7 +113,7 @@ abstract class AppModule {
 
 ### `@provides`
 
-Помечает метод модуля, который вручную создаёт или конфигурирует зависимость.
+Marks a module method that manually creates or configures a dependency.
 
 ```dart
 import 'package:knife_annotations/knife_annotations.dart';
@@ -127,7 +129,7 @@ class RepositoryModule {
 
 ### `@binds`
 
-Помечает абстрактный метод модуля, который связывает абстракцию с реализацией.
+Marks an abstract module method that binds an abstraction to an implementation.
 
 ```dart
 import 'package:knife_annotations/knife_annotations.dart';
@@ -145,7 +147,7 @@ abstract interface class ServiceModule {
 
 ### `@inject`
 
-Помечает конструктор, который DI-генератор должен использовать для создания экземпляра.
+Marks a constructor that the DI generator should use to create an instance.
 
 ```dart
 import 'package:knife_annotations/knife_annotations.dart';
@@ -167,20 +169,20 @@ class UserRepository {
 }
 ```
 
-## Как запустить генерацию
+## How to run generation
 
 ```bash
 dart run build_runner build
 ```
 
-Если нужно пересобрать файлы с перезаписью конфликтующих outputs:
+If you need to rebuild files and overwrite conflicting outputs:
 
 ```bash
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-## Ограничения
+## Limitations
 
-- Циклические зависимости не поддерживаются
-- Generic-методы в провайдерах не поддерживаются
-- Все зависимости обязательны, optional/nullable сценарии не поддерживаются
+- Cyclic dependencies are not supported
+- Generic methods in providers are not supported
+- All dependencies are required; optional/nullable scenarios are not supported

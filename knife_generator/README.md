@@ -1,10 +1,12 @@
 # knife_generator
 
-Code generator for Knife, библиотеки compile-time dependency injection на Dart.
+[Russian version](./README.ru.md)
 
-Этот пакет подключается в `dev_dependencies` и используется вместе с `build_runner`. Аннотации лежат в отдельном пакете [`knife_annotations`](https://pub.dev/packages/knife_annotations).
+Code generator for Knife, a compile-time dependency injection library for Dart.
 
-## Установка
+This package is added to `dev_dependencies` and used together with `build_runner`. The annotations are defined in a separate package, [`knife_annotations`](https://pub.dev/packages/knife_annotations).
+
+## Installation
 
 ```yaml
 dependencies:
@@ -15,53 +17,53 @@ dev_dependencies:
   build_runner: ^2.4.9
 ```
 
-## Как устроена библиотека
+## How the library works
 
-Knife описывает DI-граф через два основных понятия: компоненты и модули.
+Knife describes a DI graph through two main concepts: components and modules.
 
-Компонент это корневая точка входа в граф зависимостей. Он перечисляет модули, которые участвуют в сборке, и объявляет методы, через которые можно получить готовые зависимости.
+A component is the root entry point into the dependency graph. It lists the modules involved in assembly and declares the methods through which ready-to-use dependencies can be obtained.
 
-Модуль это описание правил, по которым зависимости попадают в граф. В модуле можно:
+A module describes the rules by which dependencies are added to the graph. Inside a module you can:
 
-- создать зависимость вручную через `@provides`
-- связать абстракцию с реализацией через `@binds`
+- create a dependency manually via `@provides`
+- bind an abstraction to an implementation via `@binds`
 
-Если зависимость не создаётся методом модуля, она может быть построена через конструктор, помеченный `@inject`.
+If a dependency is not created by a module method, it can be built through a constructor marked with `@inject`.
 
-## Как запустить генератор
+## How to run the generator
 
-Установить зависимости:
+Install dependencies:
 
 ```bash
 dart pub get
 ```
 
-Запустить генерацию:
+Run generation:
 
 ```bash
 dart run build_runner build
 ```
 
-Если нужно пересобрать файлы с перезаписью конфликтующих outputs:
+If you need to rebuild files and overwrite conflicting outputs:
 
 ```bash
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-В результате генератор создаёт:
+As a result, the generator creates:
 
-- `*.component.dart` для компонентов
-- `*.module.dart` для модулей с `@binds`
+- `*.component.dart` for components
+- `*.module.dart` for modules with `@binds`
 
-## Что делает пакет
+## What the package does
 
-- анализирует аннотации из `knife_annotations`
-- строит граф зависимостей во время генерации
-- генерирует типобезопасные `component` и `module` реализации
-- показывает ошибки сборки графа на этапе compile-time
+- analyzes annotations from `knife_annotations`
+- builds the dependency graph during generation
+- generates type-safe `component` and `module` implementations
+- reports graph build errors at compile time
 
-## Ограничения
+## Limitations
 
-- Циклические зависимости не поддерживаются
-- Generic-методы в провайдерах не поддерживаются
-- Lazy initialization не поддерживается
+- Cyclic dependencies are not supported
+- Generic methods in providers are not supported
+- Lazy initialization is not supported
