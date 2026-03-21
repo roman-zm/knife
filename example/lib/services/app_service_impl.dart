@@ -2,15 +2,15 @@ import 'dart:developer';
 
 import 'package:knife_annotations/knife_annotations.dart';
 
-import 'example_service.dart';
+import 'app_service.dart';
 
-class ExampleServiceImpl implements ExampleService {
+class AppServiceImpl implements AppService {
   @inject
-  const ExampleServiceImpl();
+  const AppServiceImpl();
 
   @override
   String doSomething() {
-    log('ExampleServiceImpl is doing something!');
+    log('AppServiceImpl is doing something!');
     return 'Service Result';
   }
 }
