@@ -1,7 +1,7 @@
 import 'package:example/di/app_component/app_component.dart';
-import 'package:example/di/screen_component/screen_component.dart';
 import 'package:flutter/material.dart';
 
+import 'home_page.dart';
 import 'screen_page.dart';
 
 class App extends StatelessWidget {
@@ -15,26 +15,13 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      initialRoute: HomePage.routeName,
       routes: {
+        HomePage.routeName: (_) =>
+            HomePage(appRepository: appComponent.appRepository()),
         ScreenPage.routeName: (_) =>
-            ScreenPage(screenComponent: ScreenComponent()),
+            ScreenPage(screenComponent: appComponent.screenComponent()),
       },
-      home: Scaffold(
-        appBar: AppBar(title: const Text('DI Demo')),
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pushNamed(ScreenPage.routeName);
-                },
-                child: const Text('Open Screen Component Screen'),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
