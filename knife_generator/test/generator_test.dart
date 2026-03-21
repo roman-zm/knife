@@ -32,7 +32,7 @@ abstract class AppComponent {
 ''';
 
       // Запуск генератора
-      final builder = dependencyInjectorBuilder(BuilderOptions.empty);
+      final builder = componentGenerator(BuilderOptions.empty);
 
       await testBuilder(
         builder,

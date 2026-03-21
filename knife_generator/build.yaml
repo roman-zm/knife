@@ -7,7 +7,7 @@ builders:
     build_to: source
   dependency_injector:
     import: "package:knife_generator/component_generator.dart"
-    builder_factories: ["dependencyInjectorBuilder"]
+    builder_factories: ["componentGenerator"]
     build_extensions: { ".dart": [".component.dart"] }
     auto_apply: dependents
     build_to: source
