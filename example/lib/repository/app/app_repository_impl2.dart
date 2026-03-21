@@ -1,7 +1,7 @@
 import 'dart:developer';
 
-import 'package:example/repository/app_repository.dart';
-import 'package:example/services/app_service.dart';
+import 'package:example/repository/app/app_repository.dart';
+import 'package:example/services/app/app_service.dart';
 import 'package:knife_annotations/knife_annotations.dart';
 
 class AppRepositoryImpl2 implements AppRepository {
