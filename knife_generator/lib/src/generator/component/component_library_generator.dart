@@ -151,9 +151,9 @@ class ComponentLibraryGenerator {
     for (final variable in variables) {
       final providerMethodName = '_provide${_typeIdentifier(variable)}';
       final dependencies = graph[variable]?.dependencies ?? {};
-      final parameters = dependencies
-          .map((e) => '_${_typeIdentifier(e)}')
-          .join(', ');
+      final parameters =
+          dependencies.map((e) => '_${_typeIdentifier(e)}').join(', ');
+
       lines.add(
           'final _${_typeIdentifier(variable)} = $providerMethodName($parameters);');
     }
@@ -172,16 +172,16 @@ class ComponentLibraryGenerator {
       returnType,
     ];
 
-    final dependenciesSet = <DartType>[];
+    final dependenciesList = <DartType>[];
 
     while (dependenciesStack.isNotEmpty) {
-      final currentType = dependenciesStack.removeLast();
+      final currentType = dependenciesStack.removeAt(0);
 
-      if (dependenciesSet.contains(currentType)) {
+      if (dependenciesList.contains(currentType)) {
         continue;
       }
 
-      dependenciesSet.add(currentType);
+      dependenciesList.add(currentType);
 
       final provider = graph[currentType];
       if (provider == null) {
@@ -193,7 +193,7 @@ class ComponentLibraryGenerator {
       dependenciesStack.addAll(provider.dependencies);
     }
 
-    return dependenciesSet.reversed.toList();
+    return dependenciesList.reversed.toList();
   }
 
   String _typeIdentifier(DartType type) =>
