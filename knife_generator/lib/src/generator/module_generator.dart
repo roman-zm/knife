@@ -1,9 +1,9 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
-import 'package:dart_style/dart_style.dart';
 import 'package:knife_annotations/knife_annotations.dart';
 import 'package:knife_generator/src/utils/element_ext.dart';
+import 'package:knife_generator/src/utils/format.dart';
 import 'package:source_gen/source_gen.dart';
 
 class ModuleGenerator extends GeneratorForAnnotation<Module> {
@@ -74,16 +74,8 @@ class ModuleGenerator extends GeneratorForAnnotation<Module> {
           ]);
       },
     );
-    // Здесь можно добавить логику генерации кода для модулей, если это необходимо.
-    return _formatGeneratedCode(knifeModuleClass);
-  }
 
-  String _formatGeneratedCode(Class clazz) {
-    final emitter =
-        DartEmitter(useNullSafetySyntax: true, orderDirectives: true);
-    return DartFormatter(
-      languageVersion: DartFormatter.latestLanguageVersion,
-    ).format('${clazz.accept(emitter)}');
+    return formatCode(knifeModuleClass);
   }
 
   Method _implementMethod(MethodElement method) {

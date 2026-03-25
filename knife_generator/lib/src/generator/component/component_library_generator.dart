@@ -1,38 +1,42 @@
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:code_builder/code_builder.dart';
+import 'package:collection/collection.dart';
 import 'package:knife_generator/src/generator/component/knife_component.dart';
-import 'package:knife_generator/src/generator/component/method_wrapper.dart';
 import 'package:knife_generator/src/model/knife_provider.dart';
-import 'package:knife_generator/src/utils/get_module_fields.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'graph.dart';
 
 class ComponentLibraryGenerator {
   Library generate(KnifeComponent componentClass) {
-    final directives = componentClass.imports.map(Directive.import);
-    final implClass = _implementComponentClass(componentClass);
+    final classImplementation = _implementComponentClass(componentClass);
+
+    final directives = componentClass.libraries
+        .map((library) => library.identifier)
+        .map(Directive.import);
 
     return Library(
       (b) => b
-        ..body.add(implClass)
+        ..body.add(classImplementation)
         ..directives.addAll(directives),
     );
   }
 
   Class _implementComponentClass(KnifeComponent component) {
-    final graph = buildGraph(component);
-    final componentName = component.element.name;
+    final componentName = component.componentElement.name!;
 
-    final factoryMethods = _generateFactoryMethods(graph);
-    final rootMethods = _generateRootMethods(component, graph);
+    final moduleFields = getModuleFields(component.modules);
+
+    final implementedMethods = _implementAbstractMethods(component);
+    final factoryMethods = _generateFactoryMethods(component.graph);
 
     return Class(
       (b) => b
         ..name = component.generatedClassName
-        ..implements.add(refer(componentName!))
-        ..fields.addAll(getModuleFields(component.modules))
-        ..methods.addAll(rootMethods)
+        ..implements.add(refer(componentName))
+        ..fields.addAll(moduleFields)
+        ..methods.addAll(implementedMethods)
         ..methods.addAll(factoryMethods),
     );
   }
@@ -115,37 +119,34 @@ class ComponentLibraryGenerator {
     return Code('return $methodFieldName.$methodName($parameters);');
   }
 
-  List<Method> _generateRootMethods(
-    KnifeComponent component,
-    DependencyGraph graph,
-  ) {
+  List<Method> _implementAbstractMethods(KnifeComponent component) {
     final abstractMethods = component.abstractMethods;
 
     final methods = <Method>[];
     for (final abstractMethod in abstractMethods) {
-      final method = _generateRootMethod(abstractMethod, graph);
+      final method = _implementAbstractMethod(abstractMethod, component.graph);
       methods.add(method);
     }
     return methods;
   }
 
-  Method _generateRootMethod(
-      MethodWrapper abstractMethod, DependencyGraph graph) {
-    final methodName = abstractMethod.element.name;
-    final returnType = abstractMethod.element.returnType;
+  Method _implementAbstractMethod(
+    MethodElement abstractMethod,
+    DependencyGraph graph,
+  ) {
+    final methodName = abstractMethod.name;
+    final returnType = abstractMethod.returnType;
 
     return Method(
       (b) => b
         ..name = methodName
-        ..returns = refer(
-          returnType.getDisplayString(),
-        )
+        ..returns = refer(returnType.getDisplayString())
         ..annotations.add(CodeExpression(Code('override')))
-        ..body = _generateRootMethodBody(returnType, graph),
+        ..body = _generateAbstractMethodBody(returnType, graph),
     );
   }
 
-  Code _generateRootMethodBody(DartType returnType, DependencyGraph graph) {
+  Code _generateAbstractMethodBody(DartType returnType, DependencyGraph graph) {
     final lines = <String>[];
     final variables = _getDependenciesList(graph, returnType);
     for (final variable in variables) {
@@ -198,4 +199,52 @@ class ComponentLibraryGenerator {
 
   String _typeIdentifier(DartType type) =>
       type.getDisplayString().replaceAll('?', '');
+}
+
+Iterable<Field> getModuleFields(List<ClassElement> modules) {
+  return modules.map(_getModuleField);
+}
+
+Field _getModuleField(ClassElement module) {
+  final defaultConstructor = _chooseConstructor(module);
+  final constructorNameValue = defaultConstructor.name;
+
+  // Формируем код для создания экземпляра
+  final constructorName =
+      constructorNameValue == null || constructorNameValue == 'new'
+          ? '${module.name}()'
+          : '${module.name}.$constructorNameValue()';
+
+  final assignment = Code(constructorName);
+
+  return Field(
+    (b) => b
+      ..name = '_${module.name}'
+      ..type = refer(module.name!)
+      ..modifier = FieldModifier.final$ // Поле должно быть final
+      ..assignment = assignment,
+  );
+}
+
+ConstructorElement _chooseConstructor(ClassElement element) {
+  // Находим конструкторы элемента
+  final constructors = element.constructors;
+
+  // Ищем конструктор без аргументов
+  final noArgConstructors = constructors.where(
+    (constructor) => constructor.formalParameters.isEmpty,
+  );
+
+  final defaultConstructor = constructors.firstWhereOrNull(
+    (constructor) => constructor.isDefaultConstructor,
+  );
+  final constructor = defaultConstructor ?? noArgConstructors.firstOrNull;
+
+  if (constructor == null) {
+    throw InvalidGenerationSourceError(
+      'Class ${element.name} must have a constructor without arguments.',
+      element: element,
+    );
+  }
+  return constructor;
 }
