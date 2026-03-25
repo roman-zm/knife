@@ -1,4 +1,6 @@
 import 'package:example/di/app_component/app_module.dart';
+import 'package:example/di/details_component/details_component.dart';
+import 'package:example/di/list_component/list_component.dart';
 import 'package:example/di/screen_component/screen_component.dart';
 import 'package:example/repository/app/app_repository.dart';
 import 'package:example/services/app/app_service.dart';
@@ -14,6 +16,8 @@ abstract class AppComponent {
   AppRepository appRepository();
 
   ScreenComponent screenComponent();
+  ListComponent listComponent();
+  DetailsComponent detailsComponent();
 
   factory AppComponent() = KnifeAppComponent;
 }

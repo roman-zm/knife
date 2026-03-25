@@ -13,6 +13,6 @@ class ScreenRepositoryImpl implements ScreenRepository {
   @override
   String getData() {
     log('ScreenRepositoryImpl is getting data using ScreenService!');
-    return _service.doSomething();
+    return '${_service.doSomething()} from ScreenRepositoryImpl';
   }
 }

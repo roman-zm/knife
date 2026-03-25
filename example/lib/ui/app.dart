@@ -1,8 +1,10 @@
 import 'package:example/di/app_component/app_component.dart';
 import 'package:flutter/material.dart';
 
-import 'home_page.dart';
-import 'screen_page.dart';
+import 'details/details_page.dart';
+import 'home/home_page.dart';
+import 'list/list_page.dart';
+import 'screen/screen_page.dart';
 
 class App extends StatelessWidget {
   final AppComponent appComponent;
@@ -21,6 +23,10 @@ class App extends StatelessWidget {
             HomePage(appRepository: appComponent.appRepository()),
         ScreenPage.routeName: (_) =>
             ScreenPage(screenComponent: appComponent.screenComponent()),
+        ListPage.routeName: (_) =>
+            ListPage(listComponent: appComponent.listComponent()),
+        DetailsPage.routeName: (_) =>
+            DetailsPage(detailsComponent: appComponent.detailsComponent()),
       },
     );
   }
