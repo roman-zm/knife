@@ -1,6 +1,6 @@
 name: knife_annotations
 description: Annotations for the Knife compile-time dependency injection library.
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/roman-zm/knife
 topics:
   - dependency-injection
