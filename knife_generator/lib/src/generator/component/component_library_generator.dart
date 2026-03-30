@@ -4,9 +4,8 @@ import 'package:code_builder/code_builder.dart';
 import 'package:collection/collection.dart';
 import 'package:knife_generator/src/generator/component/knife_component.dart';
 import 'package:knife_generator/src/model/knife_provider.dart';
+import 'package:knife_generator/src/model/node.dart';
 import 'package:source_gen/source_gen.dart';
-
-import 'graph.dart';
 
 class ComponentLibraryGenerator {
   Library generate(KnifeComponent componentClass) {
@@ -29,7 +28,7 @@ class ComponentLibraryGenerator {
     final moduleFields = getModuleFields(component.modules);
 
     final implementedMethods = _implementAbstractMethods(component);
-    final factoryMethods = _generateFactoryMethods(component.graph);
+    final factoryMethods = _generateFactoryMethods(component.providersByType);
 
     return Class(
       (b) => b
@@ -41,9 +40,11 @@ class ComponentLibraryGenerator {
     );
   }
 
-  List<Method> _generateFactoryMethods(DependencyGraph graph) {
+  List<Method> _generateFactoryMethods(
+    Map<DartType, KnifeProvider> providersByType,
+  ) {
     final methods = <Method>[];
-    for (final entry in graph.entries) {
+    for (final entry in providersByType.entries) {
       final returnType = entry.key;
       final provider = entry.value;
 
@@ -121,10 +122,16 @@ class ComponentLibraryGenerator {
 
   List<Method> _implementAbstractMethods(KnifeComponent component) {
     final abstractMethods = component.abstractMethods;
+    final graphList = component.graphList;
 
     final methods = <Method>[];
     for (final abstractMethod in abstractMethods) {
-      final method = _implementAbstractMethod(abstractMethod, component.graph);
+      final returnType = abstractMethod.returnType;
+      final graph = graphList.firstWhere(
+        (g) => g.value == returnType,
+      );
+      final method = _implementAbstractMethod(
+          abstractMethod, component.providersByType, graph);
       methods.add(method);
     }
     return methods;
@@ -132,7 +139,8 @@ class ComponentLibraryGenerator {
 
   Method _implementAbstractMethod(
     MethodElement abstractMethod,
-    DependencyGraph graph,
+    Map<DartType, KnifeProvider> providersByType,
+    Node<DartType> graph,
   ) {
     final methodName = abstractMethod.name;
     final returnType = abstractMethod.returnType;
@@ -142,22 +150,28 @@ class ComponentLibraryGenerator {
         ..name = methodName
         ..returns = refer(returnType.getDisplayString())
         ..annotations.add(CodeExpression(Code('override')))
-        ..body = _generateAbstractMethodBody(returnType, graph),
+        ..body = _generateAbstractMethodBody(graph, providersByType),
     );
   }
 
-  Code _generateAbstractMethodBody(DartType returnType, DependencyGraph graph) {
+  Code _generateAbstractMethodBody(
+    Node<DartType> graph,
+    Map<DartType, KnifeProvider> providersByType,
+  ) {
     final lines = <String>[];
-    final variables = _getDependenciesList(graph, returnType);
+    final variables = _getDependenciesList(graph);
+
     for (final variable in variables) {
       final providerMethodName = '_provide${_typeIdentifier(variable)}';
-      final dependencies = graph[variable]?.dependencies ?? {};
+      final dependencies = providersByType[variable]?.dependencies ?? {};
       final parameters =
           dependencies.map((e) => '_${_typeIdentifier(e)}').join(', ');
 
       lines.add(
           'final _${_typeIdentifier(variable)} = $providerMethodName($parameters);');
     }
+
+    final returnType = graph.value;
     lines.add(
       'return _${_typeIdentifier(returnType)};',
     );
@@ -165,40 +179,29 @@ class ComponentLibraryGenerator {
     return Code(lines.join('\n'));
   }
 
-  List<DartType> _getDependenciesList(
-    DependencyGraph graph,
-    DartType returnType,
-  ) {
-    final dependenciesStack = [
-      returnType,
-    ];
-
+  List<DartType> _getDependenciesList(Node<DartType> graph) {
     final dependenciesList = <DartType>[];
+    final visited = <DartType>{};
 
-    while (dependenciesStack.isNotEmpty) {
-      final currentType = dependenciesStack.removeAt(0);
-
-      if (dependenciesList.contains(currentType)) {
-        continue;
+    void visit(Node<DartType> node) {
+      if (!visited.add(node.value)) {
+        return;
       }
 
-      dependenciesList.add(currentType);
-
-      final provider = graph[currentType];
-      if (provider == null) {
-        throw InvalidGenerationSourceError(
-          'No provider found for type $currentType',
-        );
+      for (final child in node.children) {
+        visit(child);
       }
 
-      dependenciesStack.addAll(provider.dependencies);
+      dependenciesList.add(node.value);
     }
 
-    return dependenciesList.reversed.toList();
+    visit(graph);
+
+    return dependenciesList;
   }
 
   String _typeIdentifier(DartType type) =>
-      type.getDisplayString().replaceAll('?', '');
+      type.getDisplayString().replaceAll(RegExp(r'[^A-Za-z0-9_]'), '_');
 }
 
 Iterable<Field> getModuleFields(List<ClassElement> modules) {
@@ -209,7 +212,6 @@ Field _getModuleField(ClassElement module) {
   final defaultConstructor = _chooseConstructor(module);
   final constructorNameValue = defaultConstructor.name;
 
-  // Формируем код для создания экземпляра
   final constructorName =
       constructorNameValue == null || constructorNameValue == 'new'
           ? '${module.name}()'
@@ -221,16 +223,14 @@ Field _getModuleField(ClassElement module) {
     (b) => b
       ..name = '_${module.name}'
       ..type = refer(module.name!)
-      ..modifier = FieldModifier.final$ // Поле должно быть final
+      ..modifier = FieldModifier.final$
       ..assignment = assignment,
   );
 }
 
 ConstructorElement _chooseConstructor(ClassElement element) {
-  // Находим конструкторы элемента
   final constructors = element.constructors;
 
-  // Ищем конструктор без аргументов
   final noArgConstructors = constructors.where(
     (constructor) => constructor.formalParameters.isEmpty,
   );
