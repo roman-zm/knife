@@ -54,3 +54,14 @@ class Binds {
 
 /// {@macro binds_annotation}
 const binds = Binds();
+
+/// {@template cached_annotation}
+/// Annotation for a dependency that should be cached (singleton).
+/// {@endtemplate}
+class Cached {
+  /// {@macro cached_annotation}
+  const Cached();
+}
+
+/// {@macro cached_annotation}
+const cached = Cached();
