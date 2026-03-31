@@ -249,14 +249,14 @@ packages:
       path: "../../knife_annotations"
       relative: true
     source: path
-    version: "1.0.0"
+    version: "1.0.1"
   knife_generator:
     dependency: "direct dev"
     description:
       path: ".."
       relative: true
     source: path
-    version: "1.0.0"
+    version: "1.0.1"
   leak_tracker:
     dependency: transitive
     description:
