@@ -16,6 +16,6 @@ class ComponentGenerator extends GeneratorForAnnotation<Component> {
     final componentClass = KnifeComponent(element, annotation);
     final library = ComponentLibraryGenerator().generate(componentClass);
 
-    return formatCode(library);
+    return formatCode(library, scoped: true);
   }
 }
