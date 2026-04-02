@@ -5,7 +5,7 @@ String formatCode(Spec spec, {bool scoped = false}) {
   final emitter = DartEmitter(
     useNullSafetySyntax: true,
     orderDirectives: true,
-    allocator: scoped ? Allocator.none : Allocator.simplePrefixing(),
+    allocator: scoped ? Allocator.simplePrefixing() : Allocator.none,
   );
 
   return DartFormatter(

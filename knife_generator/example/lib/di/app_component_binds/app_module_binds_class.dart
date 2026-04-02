@@ -9,9 +9,11 @@ part 'app_module_binds_class.module.dart';
 @module
 abstract class AppModuleBindsClass {
   @binds
+  @cached
   AppRepository bindrovideAppRepository(AppRepositoryImpl2 impl);
 
   @binds
+  @cached
   AppService bindAppService(AppServiceImpl2 impl);
 
   factory AppModuleBindsClass() = KnifeAppModuleBindsClass;

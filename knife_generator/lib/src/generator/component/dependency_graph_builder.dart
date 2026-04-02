@@ -7,24 +7,14 @@ import 'package:knife_generator/src/model/node.dart';
 import 'package:knife_generator/src/utils/element_ext.dart';
 import 'package:source_gen/source_gen.dart';
 
-BuildGraphResult buildDependencyGraph(
+ProvidersByType buildDependencyGraph(
   List<DartType> providedTypes,
   List<ClassElement> modules,
 ) {
   return _DependencyGraphBuilder(modules).build(providedTypes);
 }
 
-class _BuildGraphResult {
-  final List<Node<DartType>> graphList;
-  final Map<DartType, KnifeProvider> providersByType;
-
-  _BuildGraphResult({
-    required this.graphList,
-    required this.providersByType,
-  });
-}
-
-typedef BuildGraphResult = _BuildGraphResult;
+typedef ProvidersByType = Map<DartType, KnifeProvider>;
 
 class _DependencyGraphBuilder {
   final List<ClassElement> modules;
@@ -33,16 +23,13 @@ class _DependencyGraphBuilder {
 
   _DependencyGraphBuilder(this.modules);
 
-  _BuildGraphResult build(List<DartType> providedTypes) {
+  ProvidersByType build(List<DartType> providedTypes) {
     _providers.clear();
     _nodeCache.clear();
 
-    final graphList = providedTypes.map((type) => _traverse(type, {})).toList();
+    providedTypes.map((type) => _traverse(type, {})).toList();
 
-    return _BuildGraphResult(
-      graphList: graphList,
-      providersByType: _providers,
-    );
+    return _providers;
   }
 
   Node<DartType> _traverse(DartType type, Set<DartType> path) {
@@ -81,7 +68,7 @@ class _DependencyGraphBuilder {
     }
 
     final moduleProviders = modules
-        .map((module) => _getModuleProviderCandidate(module, type))
+        .map((module) => _getModuleProvider(module, type))
         .nonNulls
         .toList();
 
@@ -93,7 +80,13 @@ class _DependencyGraphBuilder {
     }
 
     if (moduleProviders.isNotEmpty) {
-      return ModuleKnifeProvider(type, moduleProviders.first.method);
+      final moduleProvider = moduleProviders.first;
+      final cached = moduleProvider.method.hasAnnotationOfType(Cached);
+      return ModuleKnifeProvider(
+        type,
+        cached,
+        moduleProvider.method,
+      );
     }
 
     final typeElement = type.element;
@@ -103,13 +96,13 @@ class _DependencyGraphBuilder {
       );
     }
 
-    return InjectKnifeProvider(
-      type,
-      _findInjectAnnotatedConstructor(typeElement),
-    );
+    final constructor = _findInjectAnnotatedConstructor(typeElement);
+    final cached = constructor.hasAnnotationOfType(Cached);
+
+    return InjectKnifeProvider(type, cached, constructor);
   }
 
-  _ModuleProviderCandidate? _getModuleProviderCandidate(
+  ModuleKnifeProvider? _getModuleProvider(
     ClassElement module,
     DartType type,
   ) {
@@ -137,31 +130,24 @@ class _DependencyGraphBuilder {
       return null;
     }
 
-    return _ModuleProviderCandidate(module: module, method: method);
+    final cached = method.hasAnnotationOfType(Cached);
+
+    return ModuleKnifeProvider(type, cached, method);
   }
 
   String _multipleProvidersMessage(
     DartType type,
-    List<_ModuleProviderCandidate> candidates,
+    List<ModuleKnifeProvider> candidates,
   ) {
     final formattedCandidates = candidates
         .map(
-          (candidate) => '${candidate.module.name}.${candidate.method.name}',
+          (candidate) =>
+              '${candidate.method.enclosingElement!.name}.${candidate.method.name}',
         )
         .join(', ');
 
     return 'Multiple providers found for type $type: $formattedCandidates.';
   }
-}
-
-class _ModuleProviderCandidate {
-  final ClassElement module;
-  final MethodElement method;
-
-  _ModuleProviderCandidate({
-    required this.module,
-    required this.method,
-  });
 }
 
 ConstructorElement _findInjectAnnotatedConstructor(
