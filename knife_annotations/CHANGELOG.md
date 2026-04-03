@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2
+
+- Added `@cached` annotation for marking cached (singleton-like) dependencies.
+
 ## 1.0.1
 
 - Added English and Russian README documentation.

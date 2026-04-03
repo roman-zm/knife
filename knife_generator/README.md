@@ -10,10 +10,10 @@ This package is added to `dev_dependencies` and used together with `build_runner
 
 ```yaml
 dependencies:
-  knife_annotations: ^1.0.0
+  knife_annotations: ^1.0.2
 
 dev_dependencies:
-  knife_generator: ^1.0.0
+  knife_generator: ^1.0.2
   build_runner: ^2.4.9
 ```
 
@@ -29,6 +29,7 @@ A module describes the rules by which dependencies are added to the graph. Insid
 - bind an abstraction to an implementation via `@binds`
 
 If a dependency is not created by a module method, it can be built through a constructor marked with `@inject`.
+Dependencies marked with `@cached` are created once and reused within the generated component.
 
 ## How to run the generator
 
@@ -55,11 +56,13 @@ As a result, the generator creates:
 - `*.component.dart` for components
 - `*.module.dart` for modules with `@binds`
 
-## What the package does
+## Generator capabilities
 
 - analyzes annotations from `knife_annotations`
 - builds the dependency graph during generation
 - generates type-safe `component` and `module` implementations
+- supports dependency caching for providers marked with `@cached`
+- validates module and component structure before code is emitted
 - reports graph build errors at compile time
 
 ## Limitations

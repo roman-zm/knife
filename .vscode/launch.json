@@ -7,18 +7,7 @@
 			"request": "launch",
 			"program": "lib/main.dart",
 			"flutterMode": "debug",
-			"cwd": "${workspaceFolder}/example",
-		},
-		{
-			"name": "Debug generator",
-			"type": "dart",
-			"request": "launch",
-			"cwd": "${workspaceFolder}/example/",
-			"program": ".dart_tool/build/entrypoint/build.dart",
-			"args": [
-				"build",
-				"--delete-conflicting-outputs"
-			]
+			"cwd": "${workspaceFolder}/knife_generator/example",
 		}
 	]
 }

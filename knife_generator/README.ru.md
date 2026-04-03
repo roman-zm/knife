@@ -2,7 +2,7 @@
 
 [English version](./README.md)
 
-Code generator for Knife, библиотеки compile-time dependency injection на Dart.
+Генератор кода для Knife, библиотеки compile-time dependency injection на Dart.
 
 Этот пакет подключается в `dev_dependencies` и используется вместе с `build_runner`. Аннотации лежат в отдельном пакете [`knife_annotations`](https://pub.dev/packages/knife_annotations).
 
@@ -10,10 +10,10 @@ Code generator for Knife, библиотеки compile-time dependency injection
 
 ```yaml
 dependencies:
-  knife_annotations: ^1.0.0
+  knife_annotations: ^1.0.2
 
 dev_dependencies:
-  knife_generator: ^1.0.0
+  knife_generator: ^1.0.2
   build_runner: ^2.4.9
 ```
 
@@ -29,6 +29,7 @@ Knife описывает DI-граф через два основных поня
 - связать абстракцию с реализацией через `@binds`
 
 Если зависимость не создаётся методом модуля, она может быть построена через конструктор, помеченный `@inject`.
+Зависимости, помеченные `@cached`, создаются один раз и переиспользуются внутри сгенерированного компонента.
 
 ## Как запустить генератор
 
@@ -55,11 +56,13 @@ dart run build_runner build --delete-conflicting-outputs
 - `*.component.dart` для компонентов
 - `*.module.dart` для модулей с `@binds`
 
-## Что делает пакет
+## Возможности генератора
 
 - анализирует аннотации из `knife_annotations`
 - строит граф зависимостей во время генерации
 - генерирует типобезопасные `component` и `module` реализации
+- поддерживает кеширование зависимостей для провайдеров, помеченных `@cached`
+- валидирует структуру модулей и компонентов до генерации кода
 - показывает ошибки сборки графа на этапе compile-time
 
 ## Ограничения

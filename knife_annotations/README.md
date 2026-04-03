@@ -10,10 +10,10 @@ This package only contains annotation declarations and is added to `dependencies
 
 ```yaml
 dependencies:
-  knife_annotations: ^1.0.0
+  knife_annotations: ^1.0.2
 
 dev_dependencies:
-  knife_generator: ^1.0.0
+  knife_generator: ^1.0.2
   build_runner: ^2.4.9
 ```
 
@@ -142,6 +142,21 @@ abstract interface class ServiceModule {
   AuthService bindAuthService(AuthServiceImpl impl);
 
   factory ServiceModule() = KnifeServiceModule;
+}
+```
+
+### `@cached`
+
+Marks a dependency provider as cached inside the generated component.
+Can be used on `@provides`, `@binds`, and `@inject` declarations.
+
+```dart
+import 'package:knife_annotations/knife_annotations.dart';
+
+class ApiClient {
+  @inject
+  @cached
+  ApiClient();
 }
 ```
 

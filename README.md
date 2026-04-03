@@ -6,19 +6,24 @@ A set of packages for compile-time dependency injection in Dart.
 
 The repository contains three main parts:
 
-- `knife_annotations` - annotations for describing the DI graph
+- `knife_annotations` - annotation package for describing the DI graph
 - `knife_generator` - code generator for components and modules
-- `example` - usage example
+- `knife_generator/example` - usage example
 
 ## Contents
 
-- [Requirements](#requirements)
-- [How the library works](#how-the-library-works)
-- [How to add it](#how-to-add-it)
-- [How to run the generator](#how-to-run-the-generator)
-- [Annotations](#annotations)
-- [Best Practices](#best-practices)
-- [Limitations](#limitations)
+- [Knife](#knife)
+  - [Contents](#contents)
+  - [Requirements](#requirements)
+  - [Available annotations](#available-annotations)
+  - [How the library works](#how-the-library-works)
+    - [Visual architecture](#visual-architecture)
+  - [How to add it](#how-to-add-it)
+  - [How to run the generator](#how-to-run-the-generator)
+  - [Best Practices](#best-practices)
+    - [Module organization](#module-organization)
+  - [Limitations](#limitations)
+    - [What is not supported](#what-is-not-supported)
 
 ## Requirements
 
@@ -31,14 +36,15 @@ Check your Dart version:
 dart --version
 ```
 
-## What the package includes
+## Available annotations
 
-`knife_annotations` exports annotations for describing the DI graph:
+`knife_annotations` exports the public annotations used to describe the DI graph:
 
 - `@inject`
 - `@module`
 - `@provides`
 - `@binds`
+- `@cached`
 - `@Component`
 
 All annotations are declared in [`knife_annotations/lib/knife_annotations.dart`](./knife_annotations/lib/knife_annotations.dart).
@@ -95,13 +101,14 @@ Conceptually, it looks like this:
   -> concrete classes are created via @inject
 ```
 
-In other words:
+Key roles:
 
 - `@Component` defines what is available from the outside
 - `@module` defines how dependencies are assembled
 - `@provides` manually creates an object
 - `@binds` connects an interface to an implementation
 - `@inject` marks a constructor that can be used to create a class
+- `@cached` keeps a dependency instance cached inside the generated component
 
 ## How to add it
 
@@ -109,10 +116,10 @@ Add annotations to `dependencies`, and the generator with `build_runner` to `dev
 
 ```yaml
 dependencies:
-  knife_annotations: ^1.0.0
+  knife_annotations: ^1.0.2
 
 dev_dependencies:
-  knife_generator: ^1.0.0
+  knife_generator: ^1.0.2
   build_runner: ^2.4.9
 ```
 

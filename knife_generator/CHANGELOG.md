@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.2
+
+- Added support for `@cached` providers for constructor, `@provides`, and `@binds` dependency resolution paths.
+- Refactored component generation into dedicated stages (`ComponentSpec`, provider methods, factory methods, module fields, and type references).
+- Improved dependency graph traversal/provider reuse and updated generator tests and example usage.
+
 ## 1.0.1
 
 - Refactored component generation and dependency graph building to improve generated output and module handling.
