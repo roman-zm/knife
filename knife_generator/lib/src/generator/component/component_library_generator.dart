@@ -1,12 +1,13 @@
 import 'package:code_builder/code_builder.dart';
 
+import 'component_spec.dart';
 import 'factory_methods_generator.dart';
-import 'knife_component.dart';
 import 'module_fields_generator.dart';
 import 'provider_methods_generator.dart';
+import 'type_reference.dart';
 
 class ComponentLibraryGenerator {
-  final KnifeComponent component;
+  final ComponentSpec component;
 
   ComponentLibraryGenerator(this.component);
 
@@ -64,12 +65,9 @@ class ComponentLibraryGenerator {
         Method(
           (b) => b
             ..name = method.name
-            ..returns = refer(
-              method.returnType.element!.displayName,
-              method.returnType.element?.library?.identifier,
-            )
+            ..returns = referType(method.returnType)
             ..annotations.add(CodeExpression(Code('override')))
-            ..body = refer('_get${method.returnType.element?.displayName}')
+            ..body = refer('_get${typeIdentifier(method.returnType)}')
                 .call([])
                 .returned
                 .statement,
@@ -89,10 +87,12 @@ class ComponentLibraryGenerator {
           cachedTypes.map(
             (type) => Field(
               (b) => b
-                ..name = '_${type.element?.displayName}'
-                ..type = refer(
-                  '${type.element!.displayName}?',
-                  type.element!.library!.identifier,
+                ..name = '_${typeIdentifier(type)}'
+                ..type = TypeReference(
+                  (tb) => tb
+                    ..symbol = typeIdentifier(type)
+                    ..url = type.element!.library!.identifier
+                    ..isNullable = true,
                 ),
             ),
           ),

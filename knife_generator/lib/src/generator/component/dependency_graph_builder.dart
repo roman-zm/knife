@@ -3,7 +3,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:knife_annotations/knife_annotations.dart';
 import 'package:knife_generator/src/model/knife_provider.dart';
-import 'package:knife_generator/src/model/node.dart';
+import 'package:knife_generator/src/generator/component/type_reference.dart';
 import 'package:knife_generator/src/utils/element_ext.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -19,49 +19,51 @@ typedef ProvidersByType = Map<DartType, KnifeProvider>;
 class _DependencyGraphBuilder {
   final List<ClassElement> modules;
   final Map<DartType, KnifeProvider> _providers = {};
-  final Map<DartType, Node<DartType>> _nodeCache = {};
+  final Set<DartType> _resolvedTypes = {};
 
   _DependencyGraphBuilder(this.modules);
 
   ProvidersByType build(List<DartType> providedTypes) {
     _providers.clear();
-    _nodeCache.clear();
+    _resolvedTypes.clear();
 
-    providedTypes.map((type) => _traverse(type, {})).toList();
+    for (final type in providedTypes) {
+      _traverse(type, <DartType>[]);
+    }
 
     return _providers;
   }
 
-  Node<DartType> _traverse(DartType type, Set<DartType> path) {
+  void _traverse(DartType type, List<DartType> path) {
+    ensureSupportedType(type);
+
     if (path.contains(type)) {
       throw InvalidGenerationSourceError(
         'Cyclic dependency detected: ${[
           ...path,
-          type
-        ].map((t) => t.getDisplayString()).join(' -> ')}',
+          type,
+        ].map((item) => item.getDisplayString()).join(' -> ')}',
       );
     }
 
-    final cachedNode = _nodeCache[type];
-    if (cachedNode != null) {
-      return cachedNode;
+    if (_resolvedTypes.contains(type)) {
+      return;
     }
 
     final provider = _getProviderForType(type);
     _providers[type] = provider;
 
-    final node = Node(
-      type,
-      provider.dependencies
-          .map((dependency) => _traverse(dependency, {...path, type}))
-          .toList(),
-    );
+    final nextPath = [...path, type];
+    for (final dependency in provider.dependencies) {
+      _traverse(dependency, nextPath);
+    }
 
-    _nodeCache[type] = node;
-    return node;
+    _resolvedTypes.add(type);
   }
 
   KnifeProvider _getProviderForType(DartType type) {
+    ensureSupportedType(type);
+
     final cachedProvider = _providers[type];
     if (cachedProvider != null) {
       return cachedProvider;

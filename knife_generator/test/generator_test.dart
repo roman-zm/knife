@@ -88,7 +88,7 @@ abstract class AppComponent {
         outputs: {
           'test_package|lib/test.component.dart': decodedMatches(
             allOf([
-              contains('class KnifeAppComponent implements AppComponent'),
+              contains('class KnifeAppComponent implements _i1.AppComponent'),
               contains('return _AppModule.provideAppService();'),
             ]),
           ),
@@ -96,7 +96,7 @@ abstract class AppComponent {
       );
     });
 
-    test('uses valid identifiers for generic dependency types', () async {
+    test('fails fast for parameterized dependency types', () async {
       const testSource = '''
 import 'package:knife_annotations/knife_annotations.dart';
 
@@ -122,17 +122,17 @@ abstract class AppComponent {
 }
 ''';
 
+      final logs = <String>[];
       await _runBuilder(
         testSource,
-        outputs: {
-          'test_package|lib/test.component.dart': decodedMatches(
-            allOf([
-              contains('_provideList_Item_'),
-              contains('final _List_Item_ = _provideList_Item_(_Item);'),
-              contains('return GenericService(_List_Item_);'),
-            ]),
-          ),
-        },
+        onLog: logs.add,
+      );
+
+      expect(
+        logs,
+        contains(
+          contains('Parameterized types are not supported: List<Item>.'),
+        ),
       );
     });
 
@@ -171,17 +171,10 @@ abstract class AppComponent {
         outputs: {
           'test_package|lib/test.component.dart': decodedMatches(
             allOf([
+              contains('return _createFeatureA(_getSharedDependency());'),
+              contains('return _createFeatureB(_getSharedDependency());'),
               contains(
-                'final _SharedDependency = _provideSharedDependency();',
-              ),
-              contains(
-                'final _FeatureA = _provideFeatureA(_SharedDependency);',
-              ),
-              contains(
-                'final _FeatureB = _provideFeatureB(_SharedDependency);',
-              ),
-              contains(
-                'return RootService(_FeatureA, _FeatureB);',
+                'return _i1.RootService(_FeatureA, _FeatureB);',
               ),
             ]),
           ),

@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/type.dart';
 import 'package:code_builder/code_builder.dart';
+import 'package:knife_generator/src/generator/component/type_reference.dart';
 import 'package:knife_generator/src/model/knife_provider.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -19,19 +20,18 @@ List<Method> generateProviderMethods(
 
 Method _generateProviderMethod(DartType returnType, KnifeProvider provider) {
   final methodName = provider.methodName;
-  final parameters = provider.dependencies.map((e) => e.element!).map((e) {
-    return Parameter((b) => b
-      ..name = '_${e.displayName}'
-      ..type = refer(e.displayName, e.library?.identifier));
+  final parameters = provider.dependencies.map((dependency) {
+    return Parameter(
+      (b) => b
+        ..name = '_${typeIdentifier(dependency)}'
+        ..type = referType(dependency),
+    );
   }).toList();
 
   final method = Method(
     (b) => b
       ..name = methodName
-      ..returns = refer(
-        returnType.element!.displayName,
-        returnType.element!.library!.identifier,
-      )
+      ..returns = referType(returnType)
       ..requiredParameters.addAll(parameters)
       ..body = _generateProviderMethodBody(provider),
   );
@@ -56,7 +56,7 @@ Code _generateInjectProviderMethodBody(InjectKnifeProvider injectProvider) {
   ).call(
     [
       for (final param in constructor.formalParameters)
-        refer('_${param.type.getDisplayString()}'),
+        refer('_${typeIdentifier(param.type)}'),
     ],
   );
 
@@ -80,7 +80,7 @@ Code _generateModuleProviderMethodBody(ModuleKnifeProvider moduleProvider) {
       .call(
         [
           for (final param in method.formalParameters)
-            refer('_${param.type.element!.displayName}'),
+            refer('_${typeIdentifier(param.type)}'),
         ],
       )
       .returned

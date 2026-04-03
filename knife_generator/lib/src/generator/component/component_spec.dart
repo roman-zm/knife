@@ -6,44 +6,39 @@ import 'package:knife_generator/src/model/knife_provider.dart';
 import 'package:knife_generator/src/utils/element_ext.dart';
 import 'package:source_gen/source_gen.dart';
 
-class KnifeComponentCache {}
-
-class KnifeComponent {
+class ComponentSpec {
   final ClassElement componentElement;
   final List<MethodElement> abstractMethods;
-  final List<DartType> providedTypes;
   final List<ClassElement> modules;
   final Map<DartType, KnifeProvider> providersByType;
   final Set<DartType> cachedTypes;
 
-  KnifeComponent._({
+  ComponentSpec._({
     required this.componentElement,
     required this.abstractMethods,
-    required this.providedTypes,
     required this.modules,
     required this.providersByType,
     required this.cachedTypes,
   });
 
-  factory KnifeComponent(
+  factory ComponentSpec(
     Element element,
     ConstantReader annotation,
   ) {
     try {
-      return _createKnifeComponent(element, annotation);
-    } on InvalidGenerationSourceError catch (e) {
-      if (e.element == null) {
-        throw InvalidGenerationSourceError(e.message, element: element);
-      } else {
-        rethrow;
+      return _createComponentSpec(element, annotation);
+    } on InvalidGenerationSourceError catch (error) {
+      if (error.element == null) {
+        throw InvalidGenerationSourceError(error.message, element: element);
       }
+      rethrow;
     }
   }
 
   String get generatedClassName => 'Knife${componentElement.name}';
 }
 
-KnifeComponent _createKnifeComponent(
+ComponentSpec _createComponentSpec(
   Element element,
   ConstantReader annotation,
 ) {
@@ -52,30 +47,29 @@ KnifeComponent _createKnifeComponent(
       '`@Component` can only be used on abstract classes.',
     );
   }
-  final modules = _getModulesFrom(annotation);
 
-  final abstractMethods = element.methods.where((m) => m.isAbstract).toList();
+  final modules = _getModulesFrom(annotation);
+  final abstractMethods =
+      element.methods.where((method) => method.isAbstract).toList();
+
   _validateAbstractMethods(abstractMethods);
 
-  final providedTypes = abstractMethods.map((m) => m.returnType).toList();
+  final providedTypes =
+      abstractMethods.map((method) => method.returnType).toList();
   final providersByType = buildDependencyGraph(providedTypes, modules);
-  final cachedTypes = _getCachedTypes(providersByType);
+  final cachedTypes = providersByType.values
+      .where((provider) => provider.cached)
+      .map((provider) => provider.type)
+      .toSet();
 
-  return KnifeComponent._(
+  return ComponentSpec._(
     componentElement: element,
     abstractMethods: List.unmodifiable(abstractMethods),
-    providedTypes: List.unmodifiable(providedTypes),
     modules: List.unmodifiable(modules),
     providersByType: Map.unmodifiable(providersByType),
     cachedTypes: cachedTypes,
   );
 }
-
-Set<DartType> _getCachedTypes(Map<DartType, KnifeProvider> providersByType) =>
-    providersByType.values
-        .where((provider) => provider.cached)
-        .map((provider) => provider.type)
-        .toSet();
 
 void _validateAbstractMethods(List<MethodElement> abstractMethods) {
   for (final method in abstractMethods) {
@@ -89,28 +83,23 @@ void _validateAbstractMethods(List<MethodElement> abstractMethods) {
 }
 
 List<ClassElement> _getModulesFrom(ConstantReader annotation) {
-  final modulesReader = annotation.read('modules');
-  final modules = modulesReader.listValue
+  final modules = annotation
+      .read('modules')
+      .listValue
       .map((module) => module.toTypeValue())
       .nonNulls
       .map((type) => type.element)
       .whereType<ClassElement>()
       .toList();
 
-  _validateModules(modules);
-
-  return modules;
-}
-
-void _validateModules(List<ClassElement> modules) {
-  for (final moduleElement in modules) {
-    final hasModuleAnnotation = moduleElement.hasAnnotationOfType(Module);
-
-    if (!hasModuleAnnotation) {
+  for (final module in modules) {
+    if (!module.hasAnnotationOfType(Module)) {
       throw InvalidGenerationSourceError(
-        'Class ${moduleElement.name} must be annotated with @Module.',
-        element: moduleElement,
+        'Class ${module.name} must be annotated with @Module.',
+        element: module,
       );
     }
   }
+
+  return modules;
 }
