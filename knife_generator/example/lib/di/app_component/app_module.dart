@@ -2,6 +2,8 @@ import 'package:example/repository/app/app_repository.dart';
 import 'package:example/repository/app/app_repository_impl2.dart';
 import 'package:example/services/app/app_service.dart';
 import 'package:example/services/app/app_service_impl2.dart';
+import 'package:example/services/screen/screen_service.dart';
+import 'package:example/services/screen/screen_service_impl.dart';
 import 'package:knife_annotations/knife_annotations.dart';
 
 part 'app_module.module.dart';
@@ -17,4 +19,7 @@ abstract class AppModule {
 
   @binds
   AppService bindAppService(AppServiceImpl2 impl);
+
+  @binds
+  ScreenService bindScreenService(ScreenServiceImpl impl);
 }

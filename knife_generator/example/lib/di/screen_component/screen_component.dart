@@ -13,5 +13,7 @@ abstract class ScreenComponent {
   ScreenRepository screenRepository();
 
   @inject
-  factory ScreenComponent() = KnifeScreenComponent;
+  factory ScreenComponent(
+    ScreenService screenService,
+  ) = KnifeScreenComponent;
 }

@@ -12,6 +12,7 @@ class ComponentSpec {
   final List<ClassElement> modules;
   final Map<DartType, KnifeProvider> providersByType;
   final Set<DartType> cachedTypes;
+  final Set<DartType> dependencies;
 
   ComponentSpec._({
     required this.componentElement,
@@ -19,6 +20,7 @@ class ComponentSpec {
     required this.modules,
     required this.providersByType,
     required this.cachedTypes,
+    required this.dependencies,
   });
 
   factory ComponentSpec(
@@ -56,7 +58,14 @@ ComponentSpec _createComponentSpec(
 
   final providedTypes =
       abstractMethods.map((method) => method.returnType).toList();
-  final providersByType = buildDependencyGraph(providedTypes, modules);
+
+  final dependencies = element.constructors.first.formalParameters
+      .map((parameter) => parameter.type)
+      .toSet();
+
+  final providersByType =
+      buildDependencyGraph(providedTypes, modules, dependencies);
+
   final cachedTypes = providersByType.values
       .where((provider) => provider.cached)
       .map((provider) => provider.type)
@@ -68,6 +77,7 @@ ComponentSpec _createComponentSpec(
     modules: List.unmodifiable(modules),
     providersByType: Map.unmodifiable(providersByType),
     cachedTypes: cachedTypes,
+    dependencies: dependencies,
   );
 }
 

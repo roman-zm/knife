@@ -1,31 +1,39 @@
+import 'dart:developer';
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:knife_annotations/knife_annotations.dart';
-import 'package:knife_generator/src/model/knife_provider.dart';
 import 'package:knife_generator/src/generator/component/type_reference.dart';
+import 'package:knife_generator/src/model/knife_provider.dart';
 import 'package:knife_generator/src/utils/element_ext.dart';
 import 'package:source_gen/source_gen.dart';
 
 ProvidersByType buildDependencyGraph(
   List<DartType> providedTypes,
   List<ClassElement> modules,
+  Set<DartType> dependencies,
 ) {
-  return _DependencyGraphBuilder(modules).build(providedTypes);
+  return _DependencyGraphBuilder(modules, dependencies).build(providedTypes);
 }
 
 typedef ProvidersByType = Map<DartType, KnifeProvider>;
 
 class _DependencyGraphBuilder {
   final List<ClassElement> modules;
+  final Set<DartType> dependencies;
   final Map<DartType, KnifeProvider> _providers = {};
   final Set<DartType> _resolvedTypes = {};
 
-  _DependencyGraphBuilder(this.modules);
+  _DependencyGraphBuilder(this.modules, this.dependencies);
 
   ProvidersByType build(List<DartType> providedTypes) {
     _providers.clear();
     _resolvedTypes.clear();
+
+    log('Building dependency graph for provided types: ${providedTypes.map((type) => type.getDisplayString()).join(', ')}');
+    log('Modules: ${modules.map((module) => module.name).join(', ')}');
+    log('External dependencies: ${dependencies.map((type) => type.getDisplayString()).join(', ')}');
 
     for (final type in providedTypes) {
       _traverse(type, <DartType>[]);
@@ -69,39 +77,56 @@ class _DependencyGraphBuilder {
       return cachedProvider;
     }
 
-    final moduleProviders = modules
-        .map((module) => _getModuleProvider(module, type))
-        .nonNulls
-        .toList();
+    final isExternalDependency = dependencies.contains(type);
+    if (isExternalDependency) {
+      return _getExternalDependencyProvider(type);
+    }
 
+    final moduleProviders = _findModuleProvidersFor(type);
     if (moduleProviders.length > 1) {
       throw InvalidGenerationSourceError(
         _multipleProvidersMessage(type, moduleProviders),
         element: moduleProviders.first.method,
       );
+    } else if (moduleProviders.length == 1) {
+      return moduleProviders.first;
     }
 
-    if (moduleProviders.isNotEmpty) {
-      final moduleProvider = moduleProviders.first;
-      final cached = moduleProvider.method.hasAnnotationOfType(Cached);
-      return ModuleKnifeProvider(
-        type,
-        cached,
-        moduleProvider.method,
-      );
+    final injectConstructors = _findInjectAnnotatedConstructors(type);
+    if (injectConstructors.length == 1) {
+      final constructor = injectConstructors.first;
+      return _getInjectConstructorProvider(constructor, type);
     }
 
-    final typeElement = type.element;
-    if (typeElement is! ClassElement) {
-      throw InvalidGenerationSourceError(
-        'Type $type is not a class.',
-      );
-    }
+    throw InvalidGenerationSourceError(
+      _getNoProvidersFoundMessage(type),
+      element: type.element,
+    );
+  }
 
-    final constructor = _findInjectAnnotatedConstructor(typeElement);
+  String _getNoProvidersFoundMessage(DartType type) {
+    return '''No provider found for type ${type.getDisplayString()}. To resolve this, ensure that:
+ - A module provides this type via @Provides or @Binds.
+ - The class has exactly one constructor annotated with @Inject.
+ - The type is explicitly listed as a dependency in a Component constructor.''';
+  }
+
+  InjectKnifeProvider _getInjectConstructorProvider(
+      ConstructorElement constructor, DartType type) {
     final cached = constructor.hasAnnotationOfType(Cached);
-
     return InjectKnifeProvider(type, cached, constructor);
+  }
+
+  List<ModuleKnifeProvider> _findModuleProvidersFor(DartType type) {
+    return modules
+        .map((module) => _getModuleProvider(module, type))
+        .nonNulls
+        .toList();
+  }
+
+  ExternalDependencyKnifeProvider _getExternalDependencyProvider(
+      DartType type) {
+    return ExternalDependencyKnifeProvider(type);
   }
 
   ModuleKnifeProvider? _getModuleProvider(
@@ -152,19 +177,17 @@ class _DependencyGraphBuilder {
   }
 }
 
-ConstructorElement _findInjectAnnotatedConstructor(
-  ClassElement returnTypeElement,
-) {
+List<ConstructorElement> _findInjectAnnotatedConstructors(DartType type) {
+  final returnTypeElement = type.element;
+  if (returnTypeElement is! ClassElement) {
+    throw InvalidGenerationSourceError(
+      'Type $type is not a class.',
+    );
+  }
+
   final injectConstructors = returnTypeElement.constructors
       .where((constructor) => constructor.hasAnnotationOfType(Inject))
       .toList();
 
-  if (injectConstructors.length == 1) {
-    return injectConstructors.first;
-  }
-
-  throw InvalidGenerationSourceError(
-    'Type ${returnTypeElement.displayString()} must have exactly one constructor annotated with @Inject.',
-    element: returnTypeElement,
-  );
+  return injectConstructors;
 }

@@ -33,3 +33,15 @@ class ModuleKnifeProvider extends KnifeProvider {
     return method.formalParameters.map((param) => param.type).toSet();
   }
 }
+
+class ExternalDependencyKnifeProvider extends KnifeProvider {
+  ExternalDependencyKnifeProvider(DartType type) : super(type, false);
+
+  // External dependencies are not cached
+  @override
+  bool get cached => false;
+
+  // No dependencies for component dependencies
+  @override
+  Set<DartType> get dependencies => {};
+}

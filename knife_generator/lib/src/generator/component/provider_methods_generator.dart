@@ -44,7 +44,18 @@ Code _generateProviderMethodBody(KnifeProvider provider) {
       _generateInjectProviderMethodBody(injectProvider),
     ModuleKnifeProvider moduleProvider =>
       _generateModuleProviderMethodBody(moduleProvider),
+    ExternalDependencyKnifeProvider externalProvider =>
+      _generateExternalProviderMethodBody(externalProvider),
   };
+}
+
+Code _generateExternalProviderMethodBody(
+  ExternalDependencyKnifeProvider externalProvider,
+) {
+  final type = externalProvider.type;
+  final fieldName = '_${typeIdentifier(type)}';
+
+  return refer('_dependencies').property(fieldName).returned.statement;
 }
 
 Code _generateInjectProviderMethodBody(InjectKnifeProvider injectProvider) {

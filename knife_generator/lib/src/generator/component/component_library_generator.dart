@@ -12,14 +12,19 @@ class ComponentLibraryGenerator {
   ComponentLibraryGenerator(this.component);
 
   Library generate() {
-    final componentImplementation = _implementComponentClass();
     final cacheImplementation = _implementCacheClass();
+    final dependenciesHolderImplementation =
+        _implementDependenciesHolderClass();
+    final componentImplementation = _implementComponentClass();
 
     return Library(
       (b) {
         b.body.add(componentImplementation);
         if (cacheImplementation != null) {
           b.body.add(cacheImplementation);
+        }
+        if (dependenciesHolderImplementation != null) {
+          b.body.add(dependenciesHolderImplementation);
         }
       },
     );
@@ -33,10 +38,20 @@ class ComponentLibraryGenerator {
             ..modifier = FieldModifier.final$
             ..assignment = refer('_Cache').call([]).code,
         );
+    Field getDependenciesField() => Field(
+          (b) => b
+            ..name = '_dependencies'
+            ..type = refer('_Dependencies')
+            ..modifier = FieldModifier.final$,
+        );
 
     final fields = [
       ...getModuleFields(component.modules),
       if (component.cachedTypes.isNotEmpty) getCacheField(),
+      if (component.dependencies.isNotEmpty) getDependenciesField(),
+    ];
+    final constructors = [
+      if (component.dependencies.isNotEmpty) _implementComponentConstructor(),
     ];
 
     final providerMethods = generateProviderMethods(component.providersByType);
@@ -53,9 +68,38 @@ class ComponentLibraryGenerator {
           ),
         )
         ..fields.addAll(fields)
+        ..constructors.addAll(constructors)
         ..methods.addAll(implementedMethods)
         ..methods.addAll(factoryMethods)
         ..methods.addAll(providerMethods),
+    );
+  }
+
+  Constructor _implementComponentConstructor() {
+    final dependencies = component.dependencies.toList();
+
+    return Constructor(
+      (b) => b
+        ..requiredParameters.addAll(
+          dependencies.map(
+            (dependency) => Parameter(
+              (b) => b
+                ..name = typeIdentifier(dependency)
+                ..type = referType(dependency),
+            ),
+          ),
+        )
+        ..initializers.add(
+          refer('_dependencies')
+              .assign(
+                refer('_Dependencies').call(
+                  dependencies.map(
+                    (dependency) => refer(typeIdentifier(dependency)),
+                  ),
+                ),
+              )
+              .code,
+        ),
     );
   }
 
@@ -95,6 +139,45 @@ class ComponentLibraryGenerator {
                     ..isNullable = true,
                 ),
             ),
+          ),
+        ),
+    );
+  }
+
+  Class? _implementDependenciesHolderClass() {
+    final dependencies = component.dependencies;
+
+    if (dependencies.isEmpty) return null;
+
+    final fields = dependencies
+        .map(
+          (dependency) => Field(
+            (b) => b
+              ..name = '_${typeIdentifier(dependency)}'
+              ..type = referType(dependency)
+              ..modifier = FieldModifier.final$,
+          ),
+        )
+        .toList();
+
+    final constructorParameters = dependencies
+        .map(
+          (dependency) => Parameter(
+            (b) => b
+              ..name = '_${typeIdentifier(dependency)}'
+              ..toThis = true
+              ..named = false,
+          ),
+        )
+        .toList();
+
+    return Class(
+      (b) => b
+        ..name = '_Dependencies'
+        ..fields.addAll(fields)
+        ..constructors.add(
+          Constructor(
+            (b) => b..requiredParameters.addAll(constructorParameters),
           ),
         ),
     );
