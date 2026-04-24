@@ -399,7 +399,7 @@ abstract class AppComponent {
       expect(
         logs,
         contains(
-          contains('must have exactly one constructor annotated with @Inject'),
+          contains('No provider found for type AppService'),
         ),
       );
     });
