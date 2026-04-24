@@ -9,7 +9,19 @@
 
 ## Steps
 
-1. Update README files and keep them aligned.
+1. **Determine Version and Changes (NEW)**
+   - Use Git history to identify all changes since the last release tag.
+   - Calculate the previous version number based on Git history (e.g., using `git describe --tags`).
+   - Decide on the next semantic version (MAJOR, MINOR, or PATCH) based on the scope of changes found in step 1.
+
+2. Prepare changelogs.
+   - Add a new top entry to:
+     - `knife_annotations/CHANGELOG.md`
+     - `knife_generator/CHANGELOG.md`
+   - Summarize user-visible changes only.
+   - Keep entries aligned with the actual code and docs changes included in the release.
+
+3. Update README files and keep them aligned.
    - Update both root docs:
      - `README.md`
      - `README.ru.md`
@@ -18,26 +30,13 @@
      - `knife_annotations/README.ru.md`
      - `knife_generator/README.md`
      - `knife_generator/README.ru.md`
+   - Reflect only relevant user-facing documentation changes from the changelog in the README files. Do not copy the changelog verbatim into README files. Only update README sections affected by the release.
    - If version snippets are shown in install examples, update them consistently.
 
-2. Bump package versions in `pubspec.yaml`.
+4. Bump package versions in `pubspec.yaml`.
    - Update `knife_annotations/pubspec.yaml`
    - Update `knife_generator/pubspec.yaml`
    - Keep `knife_generator` dependency on `knife_annotations` in sync with the new published version range.
-
-3. Prepare changelogs.
-   - Add a new top entry to:
-     - `knife_annotations/CHANGELOG.md`
-     - `knife_generator/CHANGELOG.md`
-   - Summarize user-visible changes only.
-   - Keep entries aligned with the actual code and docs changes included in the release.
-
-4. Regenerate example outputs if generator behavior changed.
-   - Run in `knife_generator/example`:
-     - `dart run build_runner build`
-   - If needed:
-     - `dart run build_runner build --delete-conflicting-outputs`
-   - Do not commit generated `*.component.dart` or `*.module.dart` files.
 
 5. Run package validation before publish.
    - In `knife_annotations`:

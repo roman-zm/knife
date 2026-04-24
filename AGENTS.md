@@ -1,4 +1,32 @@
-READ AI_RULES.md FIRST. Do not proceed without it.
+# Agent execution rules
+
+## Execution style
+
+- Never execute more than one planned step per response.
+- Before making changes, restate the current goal in 1-2 lines.
+- After every tool call sequence, emit a compact progress block.
+
+## Required progress block
+
+Always end implementation messages with:
+
+STATUS:
+
+- current_step:
+- completed:
+- files_changed:
+- next_step:
+- blockers:
+
+## File discipline
+
+- Prefer modifying at most 1-3 files per step.
+- If the task expands, stop and rewrite the remaining plan.
+
+## Memory discipline
+
+- Treat the latest STATUS block as source of truth.
+- When context is uncertain, summarize current state before continuing.
 
 See [AI_RULES.md](./AI_RULES.md) for the canonical rules.
 
