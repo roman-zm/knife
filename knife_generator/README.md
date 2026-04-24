@@ -10,10 +10,10 @@ This package is added to `dev_dependencies` and used together with `build_runner
 
 ```yaml
 dependencies:
-  knife_annotations: ^1.0.2
+  knife_annotations: ^1.0.3
 
 dev_dependencies:
-  knife_generator: ^1.0.2
+  knife_generator: ^1.0.3
   build_runner: ^2.4.9
 ```
 
@@ -30,6 +30,24 @@ A module describes the rules by which dependencies are added to the graph. Insid
 
 If a dependency is not created by a module method, it can be built through a constructor marked with `@inject`.
 Dependencies marked with `@cached` are created once and reused within the generated component.
+
+### External Dependencies
+
+Starting from version 1.0.3, Knife supports external package dependencies. You can import and inject dependencies from external packages directly in your component:
+
+```dart
+import 'package:example/repository/screen/screen_repository.dart';
+import 'package:example/services/screen/screen_service.dart';
+
+@Component(modules: [ScreenModule])
+abstract class ScreenComponent {
+  ScreenService screenService();
+  ScreenRepository screenRepository();
+
+  @inject
+  factory ScreenComponent(ScreenService screenService) = KnifeScreenComponent;
+}
+```
 
 ## How to run the generator
 

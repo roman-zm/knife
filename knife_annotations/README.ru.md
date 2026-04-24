@@ -10,10 +10,10 @@
 
 ```yaml
 dependencies:
-  knife_annotations: ^1.0.2
+  knife_annotations: ^1.0.3
 
 dev_dependencies:
-  knife_generator: ^1.0.2
+  knife_generator: ^1.0.3
   build_runner: ^2.4.9
 ```
 

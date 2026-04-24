@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3
+
+- Enhancement dependency injection with external dependencies support.
+
 ## 1.0.2
 
 - Added support for `@cached` providers for constructor, `@provides`, and `@binds` dependency resolution paths.

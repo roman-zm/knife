@@ -10,10 +10,10 @@
 
 ```yaml
 dependencies:
-  knife_annotations: ^1.0.2
+  knife_annotations: ^1.0.3
 
 dev_dependencies:
-  knife_generator: ^1.0.2
+  knife_generator: ^1.0.3
   build_runner: ^2.4.9
 ```
 
@@ -30,6 +30,26 @@ Knife описывает DI-граф через два основных поня
 
 Если зависимость не создаётся методом модуля, она может быть построена через конструктор, помеченный `@inject`.
 Зависимости, помеченные `@cached`, создаются один раз и переиспользуются внутри сгенерированного компонента.
+
+## Внешние зависимости
+
+С версии 1.0.3 Knife поддерживает внешние зависимости из сторонних пакетов. Вы можете внедрять зависимости из других пакетов через модуль компонента.
+
+Пример использования внешней зависимости:
+
+```dart
+import 'package:example/repository/screen/screen_repository.dart';
+import 'package:example/services/screen/screen_service.dart';
+
+@Component(modules: [ScreenModule])
+abstract class ScreenComponent {
+  ScreenService screenService();
+  ScreenRepository screenRepository();
+
+  @inject
+  factory ScreenComponent(ScreenService screenService) = KnifeScreenComponent;
+}
+```
 
 ## Как запустить генератор
 
