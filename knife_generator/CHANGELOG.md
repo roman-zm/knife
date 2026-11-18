@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5
+
+- Relaxed the `build` dependency constraint to `>=3.0.0 <6.0.0` for compatibility with packages like `mockito` that still require `build` 4.x.
+
 ## 1.0.4
 
 - Updated generator dependencies to `build` ^5.0.0 and `analyzer` ^14.7.0.
