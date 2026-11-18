@@ -15,3 +15,21 @@ extension ElementExt on Element {
     });
   }
 }
+
+extension ConstructorElementExt on ConstructorElement {
+  /// Reference name suitable for `code_builder` constructor invocations.
+  ///
+  /// Analyzer 14+ reports unnamed constructors as `Class.new`; emit `Class`
+  /// instead so generated code stays free of unnecessary `.new`.
+  String get invocationName {
+    final constructorName = name;
+    final className = enclosingElement.name;
+    if (className == null) {
+      return displayName;
+    }
+    if (constructorName == null || constructorName.isEmpty || constructorName == 'new') {
+      return className;
+    }
+    return '$className.$constructorName';
+  }
+}

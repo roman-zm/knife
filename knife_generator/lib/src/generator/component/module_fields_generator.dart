@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:collection/collection.dart';
+import 'package:knife_generator/src/utils/element_ext.dart';
 import 'package:source_gen/source_gen.dart';
 
 Iterable<Field> getModuleFields(List<ClassElement> modules) {
@@ -11,7 +12,7 @@ Field _getModuleField(ClassElement module) {
   final constructor = _chooseConstructor(module);
 
   final assignment = refer(
-    constructor.displayName,
+    constructor.invocationName,
     module.library.identifier,
   ).call([]);
 

@@ -116,10 +116,10 @@ dart --version
 
 ```yaml
 dependencies:
-  knife_annotations: ^1.0.3
+  knife_annotations: ^1.0.4
 
 dev_dependencies:
-  knife_generator: ^1.0.3
+  knife_generator: ^1.0.4
   build_runner: ^2.4.9
 ```
 

@@ -38,7 +38,7 @@
    - Update `knife_generator/pubspec.yaml`
    - Keep `knife_generator` dependency on `knife_annotations` in sync with the new published version range.
 
-5. Run package validation before publish.
+5. Run and check following commands output before publish.
    - In `knife_annotations`:
      - `dart pub get`
      - `dart analyze`

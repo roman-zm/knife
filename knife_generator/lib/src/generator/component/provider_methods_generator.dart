@@ -2,6 +2,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:knife_generator/src/generator/component/type_reference.dart';
 import 'package:knife_generator/src/model/knife_provider.dart';
+import 'package:knife_generator/src/utils/element_ext.dart';
 import 'package:source_gen/source_gen.dart';
 
 List<Method> generateProviderMethods(
@@ -62,7 +63,7 @@ Code _generateInjectProviderMethodBody(InjectKnifeProvider injectProvider) {
   final constructor = injectProvider.constructor;
 
   final constructorCall = refer(
-    constructor.displayName,
+    constructor.invocationName,
     constructor.library.identifier,
   ).call(
     [

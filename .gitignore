@@ -17,3 +17,4 @@ knife_generator/pubspec.lock
 knife_annotations/pubspec.lock
 
 .vscode/settings.json
+knife_generator/example/.vscode/settings.json

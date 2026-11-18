@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.4
+
+- Updated generator dependencies to `build` ^5.0.0 and `analyzer` ^14.7.0.
+- Fixed generated constructor calls for unnamed constructors after the analyzer 14 API change (`Class.new` → `Class(...)`).
+
 ## 1.0.3
 
 - Enhancement dependency injection with external dependencies support.

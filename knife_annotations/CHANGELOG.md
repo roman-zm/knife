@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4
+
+- Version alignment with `knife_generator` 1.0.4. No annotation API changes.
+
 ## 1.0.3
 
 - Enhancement dependency injection with external dependencies support.
